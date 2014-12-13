@@ -76,9 +76,12 @@ public class MainActivity extends ActionBarActivity {
 //            list1.add("Wednesday Sunny 88/99");
 //            list1.add("Thursday Sunny 88/99");
 
-            String[] listArray = {"Today Sunny 88/99","Tomorrow Foggy 88/99",
-                    "Monday Sunny 88/99","Tuesday Sunny 88/99","Wednesday Sunny 88/99",
-                    "Thursday Sunny 88/99"};
+            String[] listArray = {"Today Sunny 88°/99°",
+                    "Tomorrow Foggy 88°/98°",
+                    "Monday Sunny 76°/94°",
+                    "Tuesday Sunny 84°/88°",
+                    "Wednesday Sunny 78°/93°",
+                    "Thursday Sunny 72°/95°"};
 
             ArrayList<String> weekForecast = new ArrayList<String>(Arrays.asList(listArray));
 
