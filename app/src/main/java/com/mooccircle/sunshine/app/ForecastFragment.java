@@ -99,7 +99,7 @@ public  class ForecastFragment extends Fragment {
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
-            String highLowStr = roundedHigh + "/" + roundedLow;
+            String highLowStr = roundedHigh + "°/" + roundedLow+ "°";
             return highLowStr;
         }
 
@@ -198,14 +198,17 @@ public  class ForecastFragment extends Fragment {
                 httpURLConnection.setRequestMethod("GET");
                 httpURLConnection.connect();
 
+//              InputStream's are used for reading byte based data, one byte at a time.
                 InputStream inputStream = httpURLConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
+
                 if(inputStream == null) {
 //                    foreCastJsonStr = null;
                     return null;
                 }
 
-
+//              Reads text from a character-input stream, buffering characters so as to provide for the efficient reading of
+//              characters, arrays, and lines.
                 bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
 
