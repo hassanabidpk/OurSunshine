@@ -126,7 +126,7 @@ public  class ForecastFragment extends Fragment {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             String[] resultStrs = new String[numDays];
-            for(int i = 0; i < weatherArray.length(); i++) {
+            for(int i = 0; i < numDays; i++) {
                 // For now, using the format "Day, description, hi/low"
                 String day;
                 String description;
