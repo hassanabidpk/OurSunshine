@@ -45,6 +45,8 @@ public  class ForecastFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+//        GsonBuilder gson = new GsonBuilder();
+
         super.onCreate(savedInstanceState);
     }
 
