@@ -7,5 +7,18 @@
     <string name="action_label" translatable="false">Refresh</string>
     <string name="today_date">Today, December 1</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="pref_location_key" translatable="false" >location</string>
+    <string name="pref_location_default" ranslatable="false" >Seoul</string>
+    <string name="pref_location_label">Location</string>
+    <string name="pref_unit_key" translatable="false" >unit</string>
+    <string name="pref_unit_default" translatable="false" >metric</string>
+    <string name="pref_unit_imperial">imperial</string>
+    <string name="pref_unit_label">Temperature Units</string>
+    <string name="pref_units_lable_metric">Metric</string>
+    <string name="pref_units_lable_imperial">Imperial</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="title_activity_settings">SettingActivity</string>
 
 </resources>

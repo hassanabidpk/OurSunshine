@@ -1,9 +1,12 @@
 package com.mooccircle.sunshine.app;
 
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -27,7 +31,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -38,6 +41,13 @@ public  class ForecastFragment extends Fragment {
     private ArrayAdapter<String> mForecastAdapter;
 
     public ForecastFragment() {
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        updateWeather();
     }
 
     @Override
@@ -55,17 +65,17 @@ public  class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        String[] listArray = {"Today Sunny 88°/99°",
-                "Tomorrow Foggy 88°/99°",
-                "Monday Sunny 88°/99°",
-                "Tuesday Sunny 88°/99°",
-                "Wednesday Sunny 88°/99°",
-                "Thursday Sunny 88°/99°"};
-
-        ArrayList<String> weekForecast = new ArrayList<String>(Arrays.asList(listArray));
+//        String[] listArray = {"Today Sunny 88°/99°",
+//                "Tomorrow Foggy 88°/99°",
+//                "Monday Sunny 88°/99°",
+//                "Tuesday Sunny 88°/99°",
+//                "Wednesday Sunny 88°/99°",
+//                "Thursday Sunny 88°/99°"};
+//
+//        ArrayList<String> weekForecast = new ArrayList<String>(Arrays.asList(listArray));
 
         mForecastAdapter = new ArrayAdapter<String>(getActivity(),R.layout.list_item_forecast,R.id.list_item_forecast_textview,
-                weekForecast);
+                new ArrayList<String>());
 
 
         ListView list = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -74,6 +84,19 @@ public  class ForecastFragment extends Fragment {
 
 
         // TODO :  Recycle views
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String forecast = mForecastAdapter.getItem(position);
+//                Toast.makeText(getActivity(),forecast, Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT,forecast);  // Key - value pair
+                startActivity(intent);
+            }
+        });
 
         return rootView;
     }
@@ -97,6 +120,17 @@ public  class ForecastFragment extends Fragment {
          * Prepare the weather high/lows for presentation.
          */
         private String formatHighLows(double high, double low) {
+
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = sharedPrefs.getString(getString(R.string.pref_unit_key),getString(R.string.pref_unit_default));
+
+            if(unitType.equals(getString(R.string.pref_unit_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            } else if (!unitType.equals(getString(R.string.pref_unit_default))) {
+                Log.d(LOG_TAG,"Unit type not found : " + unitType);
+            }
+
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
@@ -283,11 +317,18 @@ public  class ForecastFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
-            fetchWeatherTask.execute("Seoul");
+            updateWeather();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateWeather(){
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = sharedPref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
+        fetchWeatherTask.execute(location);
     }
 }
