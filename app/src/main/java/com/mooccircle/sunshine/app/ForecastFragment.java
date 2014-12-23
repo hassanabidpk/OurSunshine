@@ -1,6 +1,7 @@
 package com.mooccircle.sunshine.app;
 
 
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,8 +50,6 @@ public  class ForecastFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-//        GsonBuilder gson = new GsonBuilder();
-
         super.onCreate(savedInstanceState);
     }
 
@@ -65,13 +68,14 @@ public  class ForecastFragment extends Fragment {
         ArrayList<String> weekForecast = new ArrayList<String>(Arrays.asList(listArray));
 
         mForecastAdapter = new ArrayAdapter<String>(getActivity(),R.layout.list_item_forecast,R.id.list_item_forecast_textview,
-                weekForecast);
+                new ArrayList<String>());
 
 
         ListView list = (ListView) rootView.findViewById(R.id.listview_forecast);
 
         list.setAdapter(mForecastAdapter);
 
+        fetchData();
 
         // TODO :  Recycle views
 
@@ -81,6 +85,8 @@ public  class ForecastFragment extends Fragment {
     public class FetchWeatherTask extends AsyncTask<String,Void,String[]> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+
+        private ProgressDialog progress = null;
 
         /* The date/time conversion code is going to be moved outside the asynctask later,
  * so for convenience we're breaking it out into its own method now.
@@ -161,6 +167,27 @@ public  class ForecastFragment extends Fragment {
             return resultStrs;
         }
 
+        private String[] getCoursesFromJson (String courseJson) throws  JSONException {
+
+
+            JSONObject obj = new JSONObject(courseJson);
+            JSONArray courseArray = obj.getJSONArray("courses");
+
+            GsonBuilder builder = new GsonBuilder();
+
+            builder = builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+            Gson gson = builder.create();
+
+            Courses[] courses = gson.fromJson(courseArray.toString(),Courses[].class);
+            String[] resultStrs = new String[courseArray.length()];
+            for(int i = 0; i < courseArray.length(); i++) {
+
+                Log.d(LOG_TAG,"Course title : " + courses[i].getTitle());
+                resultStrs[i] = courses[i].getTitle() + "\n" + courses[i].getSubTitle();
+            }
+            return resultStrs;
+        }
+
 
         @Override
         protected String[] doInBackground(String... params) {
@@ -176,7 +203,7 @@ public  class ForecastFragment extends Fragment {
             int numDays = 7;
 
             String foreCastJsonStr = null;
-
+            publishProgress();
             try {
 //                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=Seoul&mode=xml&units=metric&cnt=7");
                 final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
@@ -185,16 +212,22 @@ public  class ForecastFragment extends Fragment {
                 final String UNITS_PARAM = "units";
                 final String DAYS_PARAM = "cnt";
 
-                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendQueryParameter(QUERY_PARAM,params[0])
-                        .appendQueryParameter(FORMAT_PARAM,format)
-                        .appendQueryParameter(UNITS_PARAM,units)
-                        .appendQueryParameter(DAYS_PARAM,Integer.toString(numDays))
+
+                final  String UDACITY_BASE_URL = "https://www.udacity.com/public-api/v0/courses";
+
+//                Uri buildUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+//                        .appendQueryParameter(QUERY_PARAM,params[0])
+//                        .appendQueryParameter(FORMAT_PARAM,format)
+//                        .appendQueryParameter(UNITS_PARAM,units)
+//                        .appendQueryParameter(DAYS_PARAM,Integer.toString(numDays))
+//                        .build();
+
+                Uri buildUri = Uri.parse(UDACITY_BASE_URL).buildUpon()
                         .build();
 
-                URL url = new URL(builtUri.toString());
+                URL url = new URL(buildUri.toString());
 
-                Log.v(LOG_TAG,"built Uri  : " + builtUri.toString());
+                Log.v(LOG_TAG,"built Uri  : " + buildUri.toString());
 
                 httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setRequestMethod("GET");
@@ -244,7 +277,11 @@ public  class ForecastFragment extends Fragment {
 
             }
             try {
-                return getWeatherDataFromJson(foreCastJsonStr, numDays);
+
+//                return getWeatherDataFromJson(foreCastJsonStr, numDays);
+
+                return getCoursesFromJson(foreCastJsonStr);
+
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
@@ -253,18 +290,36 @@ public  class ForecastFragment extends Fragment {
             return null;
         }
 
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+
+            progress = new ProgressDialog(getActivity());
+            progress.setTitle("fetching courses");
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.show();
+        }
+
         @Override
         protected void onPostExecute(String[] result) {
 
+            progress.dismiss();
             if(result != null) {
-                mForecastAdapter.clear();
-                // honeycomb and above
-                mForecastAdapter.addAll(result);
-//                for(String data: result)
-//                    mForecastAdapter.add(data);
+                    updateCourses(result);
             }
 
         }
+    }
+
+    private void updateCourses(String[] result) {
+
+        mForecastAdapter.clear();
+        // honeycomb and above
+//        mForecastAdapter.addAll(data);
+                for(String data: result)
+                    mForecastAdapter.add(data);
     }
 
     @Override
@@ -283,11 +338,16 @@ public  class ForecastFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
-            fetchWeatherTask.execute("Seoul");
+                fetchData();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void fetchData() {
+
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
+        fetchWeatherTask.execute("Seoul");
     }
 }
