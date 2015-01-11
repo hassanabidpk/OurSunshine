@@ -20,5 +20,7 @@
 
     <string name="cancel">Cancel</string>
     <string name="title_activity_settings">SettingActivity</string>
+    <string name="action_map">Map Location</string>
+    <string name="action_share">Share</string>
 
 </resources>
