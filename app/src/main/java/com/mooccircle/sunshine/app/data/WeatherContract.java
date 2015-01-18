@@ -50,6 +50,8 @@ public class WeatherContract {
     public static final String PATH_LOCATION = "location";
 
 
+
+
     // Format used for storing dates in the database.  ALso used for converting those strings
     // back into date objects for comparison/processing.
     
@@ -68,6 +70,7 @@ public class WeatherContract {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
         return sdf.format(date);
     }
+
 
 
     /**
