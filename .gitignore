@@ -6,3 +6,6 @@
 .DS_Store
 /build
 OurSunshine.iml
+.idea/.name
+.idea/misc.xml
+.idea/modules.xml
