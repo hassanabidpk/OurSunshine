@@ -34,6 +34,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mooccircle.sunshine.app.MainActivity" />
         </activity>
+
+        <provider
+            android:authorities="com.mooccircle.sunshine.app"
+            android:name=".data.WeatherProvider" />
     </application>
 
 </manifest>

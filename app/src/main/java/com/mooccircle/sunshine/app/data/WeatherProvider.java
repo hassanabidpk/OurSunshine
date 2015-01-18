@@ -305,7 +305,11 @@ public  class WeatherProvider extends ContentProvider {
     private static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
     private static final int LOCATION = 300;
     private static final int LOCATION_ID = 301;
-    
+
+    private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private WeatherDbHelper mOpenHelper;
+
+
     private static UriMatcher buildUriMatcher() {
 
 //        I know what you're thinking.  Why create a UriMatcher when you can use regular
@@ -331,7 +335,10 @@ public  class WeatherProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        return false;
+        
+        mOpenHelper = new WeatherDbHelper(getContext());
+        
+        return true;
     }
 
     @Override
