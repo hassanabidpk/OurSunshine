@@ -52,4 +52,8 @@
     <!-- Humidity format in % [CHAR LIMIT=NONE] -->
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
 
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">sunshine.mooccircle.com</string>
+    <string name="content_authority">com.mooccircle.sunshine.app</string>
+
 </resources>

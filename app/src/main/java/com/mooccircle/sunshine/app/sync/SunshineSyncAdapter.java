@@ -1,33 +1,25 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.mooccircle.sunshine.app.sync;
 
-package com.mooccircle.sunshine.app.service;
-
-import android.app.IntentService;
-import android.content.BroadcastReceiver;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.AbstractThreadedSyncAdapter;
+import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
+import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
+import com.mooccircle.sunshine.app.R;
 import com.mooccircle.sunshine.app.data.WeatherContract;
+import com.mooccircle.sunshine.app.data.WeatherContract.WeatherEntry;
+import com.mooccircle.sunshine.app.data.WeatherContract.LocationEntry;
+
+import com.mooccircle.sunshine.app.util.Utility;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,23 +34,26 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Vector;
 
+/**
+ * Created by hassankcdh on 1/19/15.
+ */
+public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter{
 
 
-public class SunshineService extends IntentService {
-    
-    private ArrayAdapter<String> mForecastAdapter;
-    private Context mContext;
-    
-    public static final String LOCATION_QUERY_EXTRA = "lqe";
-    private final String LOG_TAG = SunshineService.class.getSimpleName();
-    public SunshineService() {
-        super("Sunshine");
+    public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
+
+    public SunshineSyncAdapter(Context context, boolean autoInitialize) {
+        super(context, autoInitialize);
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        
-        String locationQuery = intent.getStringExtra(LOCATION_QUERY_EXTRA);
+    public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, 
+                              SyncResult syncResult) {
+
+
+        Log.d(LOG_TAG, "Starting sync");
+        // Getting the zipcode to send to the API
+        String locationQuery = Utility.getPreferredLocation(getContext());
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -111,8 +106,7 @@ public class SunshineService extends IntentService {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
-                buffer.append(line);
-                buffer.append("\n");
+                buffer.append(line + "\n");
             }
 
             if (buffer.length() == 0) {
@@ -122,7 +116,7 @@ public class SunshineService extends IntentService {
             forecastJsonStr = buffer.toString();
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attempting
+            // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
             return;
         } finally {
@@ -230,36 +224,34 @@ public class SunshineService extends IntentService {
 
                 ContentValues weatherValues = new ContentValues();
 
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATETEXT, WeatherContract.getDbDateString(new Date(dateTime * 1000L)));
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
+                weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationId);
+                weatherValues.put(WeatherEntry.COLUMN_DATETEXT, WeatherContract.getDbDateString(new Date(dateTime * 1000L)));
+                weatherValues.put(WeatherEntry.COLUMN_HUMIDITY, humidity);
+                weatherValues.put(WeatherEntry.COLUMN_PRESSURE, pressure);
+                weatherValues.put(WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+                weatherValues.put(WeatherEntry.COLUMN_DEGREES, windDirection);
+                weatherValues.put(WeatherEntry.COLUMN_MAX_TEMP, high);
+                weatherValues.put(WeatherEntry.COLUMN_MIN_TEMP, low);
+                weatherValues.put(WeatherEntry.COLUMN_SHORT_DESC, description);
+                weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
                 cVVector.add(weatherValues);
             }
             if ( cVVector.size() > 0 ) {
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
-                this.getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
-                        cvArray);
-
-
+                getContext().getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI, cvArray);
             }
-            Log.d(LOG_TAG, "Sunshine Service Complete. " + cVVector.size() + " Inserted");
+            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
 
+        // This will only happen if there was an error getting or parsing the forecast.
+        return;
     }
-
 
     /**
      * Helper method to handle insertion of a new location in the weather database.
@@ -276,15 +268,15 @@ public class SunshineService extends IntentService {
         Log.v(LOG_TAG, "inserting " + cityName + ", with coord: " + lat + ", " + lon);
 
         // First, check if the location with this city name exists in the db
-        Cursor locationCursor = this.getContentResolver().query(
+        Cursor locationCursor = getContext().getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{WeatherContract.LocationEntry._ID},
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{LocationEntry._ID},
+                LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
                 new String[]{locationSetting},
                 null);
 
         if (locationCursor.moveToFirst()) {
-            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            int locationIdIndex = locationCursor.getColumnIndex(LocationEntry._ID);
             locationId = locationCursor.getLong(locationIdIndex);
         } else {
             // Now that the content provider is set up, inserting rows of data is pretty simple.
@@ -293,13 +285,13 @@ public class SunshineService extends IntentService {
 
             // Then add the data, along with the corresponding name of the data type,
             // so the content provider knows what kind of value is being inserted.
-            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
-            locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
-            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
-            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            locationValues.put(LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(LocationEntry.COLUMN_COORD_LONG, lon);
 
             // Finally, insert location data into the database.
-            Uri insertedUri = this.getContentResolver().insert(
+            Uri insertedUri = getContext().getContentResolver().insert(
                     WeatherContract.LocationEntry.CONTENT_URI,
                     locationValues
             );
@@ -308,25 +300,61 @@ public class SunshineService extends IntentService {
             locationId = ContentUris.parseId(insertedUri);
         }
 
-        // Always close our cursor
-        if ( null != locationCursor ) locationCursor.close();
-
         // Wait, that worked?  Yes!
         return locationId;
+        
+        
     }
 
+    /**
+     * Helper method to have the sync adapter sync immediately
+     * @param context The context used to access the account service
+     */
+    public static void syncImmediately(Context context) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        ContentResolver.requestSync(getSyncAccount(context),
+                context.getString(R.string.content_authority), bundle);
+    }
 
+    /**
+     * Helper method to get the fake account to be used with SyncAdapter, or make a new one
+     * if the fake account doesn't exist yet.  If we make a new account, we call the
+     * onAccountCreated method so we can initialize things.
+     *
+     * @param context The context used to access the account service
+     * @return a fake account.
+     */
+    public static Account getSyncAccount(Context context) {
+        // Get an instance of the Android account manager
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
 
-    public static class AlarmReceiver extends BroadcastReceiver {
+        // Create the account type and default account
+        Account newAccount = new Account(
+                context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Intent sendIntent = new Intent(context, SunshineService.class);
-            sendIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, intent.getStringExtra(SunshineService.LOCATION_QUERY_EXTRA));
-            context.startService(sendIntent);
+        // If the password doesn't exist, the account doesn't exist
+        if ( null == accountManager.getPassword(newAccount) ) {
+
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+            if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
+                return null;
+            }
+            /*
+             * If you don't set android:syncable="true" in
+             * in your <provider> element in the manifest,
+             * then call ContentResolver.setIsSyncable(account, AUTHORITY, 1)
+             * here.
+             */
+
 
         }
+        return newAccount;
     }
-
 
 }
