@@ -7,9 +7,9 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/AppTheme" > >
+        android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.mooccircle.sunshine.app.MainActivity"
             android:label="@string/app_name" 
             android:theme="@style/ForecastTheme">
             <intent-filter>

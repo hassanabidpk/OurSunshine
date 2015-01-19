@@ -22,5 +22,9 @@
         <item name="displayOptions">useLogo|showHome</item>
         <item name="logo">@drawable/ic_logo</item>
     </style>
+
+    <style name="ForecastListStyle">
+
+    </style>
     
     </resources>
