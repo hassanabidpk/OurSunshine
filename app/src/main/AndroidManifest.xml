@@ -39,6 +39,8 @@
             android:authorities="com.mooccircle.sunshine.app"
             android:name=".data.WeatherProvider" 
             android:exported="false"/>
+
+        <service android:name="com.mooccircle.sunshine.app.service.SunshineService"/>
     </application>
 
 </manifest>

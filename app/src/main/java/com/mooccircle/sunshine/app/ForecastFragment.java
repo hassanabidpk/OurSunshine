@@ -1,6 +1,7 @@
 package com.mooccircle.sunshine.app;
 
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.widget.ListView;
 import com.mooccircle.sunshine.app.data.WeatherContract;
 import com.mooccircle.sunshine.app.data.WeatherContract.LocationEntry;
 import com.mooccircle.sunshine.app.data.WeatherContract.WeatherEntry;
+import com.mooccircle.sunshine.app.service.SunshineService;
 import com.mooccircle.sunshine.app.util.Utility;
 
 import java.util.Date;
@@ -203,8 +205,13 @@ public  class ForecastFragment extends Fragment implements LoaderManager.LoaderC
 
     private void updateWeather(){
 
-        String location = Utility.getPreferredLocation(getActivity());
-        new FetchWeatherTask(getActivity()).execute(location);
+//        String location = Utility.getPreferredLocation(getActivity());
+//        new FetchWeatherTask(getActivity()).execute(location);
+        
+        Intent intent = new Intent(getActivity(), SunshineService.class);
+        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,Utility.getPreferredLocation(getActivity()));
+        
+        getActivity().startService(intent);
     }
 
 
