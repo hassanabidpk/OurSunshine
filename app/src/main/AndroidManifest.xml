@@ -41,6 +41,8 @@
             android:exported="false"/>
 
         <service android:name="com.mooccircle.sunshine.app.service.SunshineService"/>
+
+        <receiver android:name=".service.SunshineService$AlarmReceiver" android:enabled="true"/>
     </application>
 
 </manifest>
