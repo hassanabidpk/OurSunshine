@@ -318,6 +318,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter{
      * @param context The context used to access the account service
      */
     public static void syncImmediately(Context context) {
+
+        Log.d("SyncAdapter","init syncImmediately");
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
@@ -367,6 +369,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter{
     }
 
     private static void onAccountCreated(Account newAccount, Context context) {
+
+        Log.d("SyncAdapter","init onAccountCreated");
         /*
          * Since we've created an account
          */
@@ -402,6 +406,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter{
     }
 
     public static void initializeSyncAdapter(Context context) {
+        Log.d("SyncAdapter","init sync adapter");
         getSyncAccount(context);
     }
 }
