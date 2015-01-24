@@ -4,8 +4,8 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light">
         <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine</item>
-        <!--<item name="android:colorPrimary">@color/sunshine_light_blue</item>-->
-        <!--<item name="android:colorPrimaryDark">@color/sunshine_blue</item>-->
+        <item name="android:colorPrimary">@color/sunshine_light_blue</item>
+        <item name="android:colorPrimaryDark">@color/sunshine_blue</item>
     </style>
  
     <!-- ActionBar style -->
