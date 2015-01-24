@@ -1,8 +1,11 @@
 <!-- Note when copying: Make sure you remove the existing AppTheme declared in the styles file -->
 <resources>
-    <!-- Base application theme -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
         <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine</item>
+        <!--<item name="android:colorPrimary">@color/sunshine_light_blue</item>-->
+        <!--<item name="android:colorPrimaryDark">@color/sunshine_blue</item>-->
     </style>
  
     <!-- ActionBar style -->
